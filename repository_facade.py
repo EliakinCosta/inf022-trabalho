@@ -17,8 +17,8 @@ class RepositoryFacade(object):
 
     def _load_commits(self):
         has_next = True
-        url = 'https://api.github.com/repositories/43975673/commits?page=62'
-        headers = {'Authorization': 'token {0}'.format('45803467536d94d0dce8460755c2b4f3538fd7e7')}
+        url = 'https://api.github.com/repositories/43975673/commits?per_page=200&since=2016-04-09T16:00:49Z&until=2017-04-09T00:00:49Z'
+        headers = {'Authorization': 'token {0}'.format('203f6dc1b46387106e79e1b369e8b228c505f89a')}
         result = requests.get(url, headers=headers)
         print(result)
         if result.status_code!=200:

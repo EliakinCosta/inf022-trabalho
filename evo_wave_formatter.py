@@ -55,16 +55,23 @@ class Molecule(object):
 def list_windows():
     windows = []
 
-    windows.append((1, datetime.datetime(2016, 9, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 10, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((2, datetime.datetime(2016, 10, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 11, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((3, datetime.datetime(2016, 11, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 12, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((4, datetime.datetime(2016, 12, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 1, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((5, datetime.datetime(2017, 1, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime.now(tz=pytz.timezone('America/Bahia'))))
+    windows.append((1, datetime.datetime(2016, 5, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 6, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((2, datetime.datetime(2016, 6, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 7, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((3, datetime.datetime(2016, 7, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 8, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((4, datetime.datetime(2016, 8, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 9, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((5, datetime.datetime(2016, 9, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 10, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((6, datetime.datetime(2016, 10, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 11, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((7, datetime.datetime(2016, 11, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 12, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((8, datetime.datetime(2016, 12, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 1, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((9, datetime.datetime(2017, 1, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 2, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((10, datetime.datetime(2017, 2, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 3, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((11, datetime.datetime(2017, 3, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 4, 1, tzinfo=pytz.timezone('America/Bahia'))))
+    windows.append((12, datetime.datetime(2017, 4, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime.now(tz=pytz.timezone('America/Bahia'))))
 
     return windows
 
 
-def load_windows_to_sectors(sectors):
+def load_windows_to_sectors(sectors, general_windows):
     for sector in sectors:
         for window in general_windows:
             commits_by_window = git_wrapper.commits_by_window(window[1], window[2])
@@ -89,19 +96,19 @@ if __name__=='__main__':
     general_windows = list_windows()
 
     for user in git_wrapper.contributors:
-        sectors.append(Sector(user['email'], 0.33))
+        sectors.append(Sector(user['email'], 0.066))
 
-    load_windows_to_sectors(sectors)
+    load_windows_to_sectors(sectors, general_windows)
     load_molecules_to_sectors(sectors)
 
     json_dict = dict(period={"starts": "01/09/1978 00:00:00 +0000", "ends": "07/09/2017 00:00:00 +0000"},
                      query="",
                      window={
                          "size": 25,
-                         "amount": 4,
+                         "amount": 12,
                          "mode": "GLOBAL"
                      },
-                     sector={"label": "emile-server"},
+                     sector={"label": "krita"},
                      sectors=[sector.as_dict() for sector in sectors])
 
 
