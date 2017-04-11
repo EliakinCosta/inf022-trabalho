@@ -2,6 +2,8 @@ import requests
 from dateutil import parser as date_parser
 import datetime
 import pytz
+import json
+import time
 
 
 class RepositoryFacade(object):
@@ -13,32 +15,35 @@ class RepositoryFacade(object):
         self.contributors = []
 
         self._load_commits()
-        self._load_contributors()
+        #self._load_contributors()
 
     def _load_commits(self):
+        count = 0
         has_next = True
-        url = 'https://api.github.com/repositories/43975673/commits?per_page=200&since=2016-04-09T16:00:49Z&until=2017-04-09T00:00:49Z'
-        headers = {'Authorization': 'token {0}'.format('203f6dc1b46387106e79e1b369e8b228c505f89a')}
+        url = 'https://api.github.com/repositories/43975673/commits?per_page=100&since=2012-04-09T00:00:01Z&until=2013-04-08T11:59:59Z'
+        headers = {'Authorization': 'token {0}'.format('387292809a22b21fbb1661246aa1d340d8700e87')}
         result = requests.get(url, headers=headers)
         print(result)
         if result.status_code!=200:
             return
-        count = 0
         while has_next:
             print(result)
             commits = result.json()
             self.commits.extend([commit for commit in commits])
-            link = result.headers
+            header = result.headers
             count += 1
             print(count)
-            link = link['Link']
+            link = header.get('Link')
             print(link)
-            link = link.replace('<', '').replace('>', '')
+
+            if count%30==0:
+                time.sleep(65)
 
             if not 'rel="next"' in str(link):
                 has_next = False
 
             if has_next:
+                link = link.replace('<', '').replace('>', '')
                 next_link = link.split(',')[0]
                 next_link = next_link.split(';')[0]
                 url = next_link
@@ -58,12 +63,7 @@ class RepositoryFacade(object):
                                                       date_parser.parse(commit['commit']['committer']['date'])<=end_pediod)]
 
 if __name__=='__main__':
+    #15 2012-2013 NAO foi executado ainda
     git_wrapper = RepositoryFacade('sandroandrade', 'emile-server')
-    commits = git_wrapper.commits_by_window(datetime.datetime(2016, 9, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 10, 1, tzinfo=pytz.timezone('America/Bahia')))
-    teste = None
-    try:
-        for commit in commits:
-            teste = commit
-            print(commit['commit']['author']['email'])
-    except:
-        print(teste)
+    with open('data_15.json', 'w') as evowave_file:
+        json.dump(git_wrapper.commits, evowave_file)
