@@ -3,6 +3,7 @@ from dateutil import parser as date_parser
 import datetime
 import pytz
 import json
+import list_windows
 
 
 git_wrapper = repository_facade.RepositoryFacade('KDE', 'krita')
@@ -51,52 +52,31 @@ class Molecule(object):
         return dict(color=self.color, data=self.data)
 
 
-
-def list_windows():
-    windows = []
-
-    windows.append((1, datetime.datetime(2016, 5, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 6, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((2, datetime.datetime(2016, 6, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 7, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((3, datetime.datetime(2016, 7, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 8, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((4, datetime.datetime(2016, 8, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 9, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((5, datetime.datetime(2016, 9, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 10, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((6, datetime.datetime(2016, 10, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 11, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((7, datetime.datetime(2016, 11, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2016, 12, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((8, datetime.datetime(2016, 12, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 1, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((9, datetime.datetime(2017, 1, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 2, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((10, datetime.datetime(2017, 2, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 3, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((11, datetime.datetime(2017, 3, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime(2017, 4, 1, tzinfo=pytz.timezone('America/Bahia'))))
-    windows.append((12, datetime.datetime(2017, 4, 1, tzinfo=pytz.timezone('America/Bahia')), datetime.datetime.now(tz=pytz.timezone('America/Bahia'))))
-
-    return windows
-
-
 def load_windows_to_sectors(sectors, general_windows):
     for sector in sectors:
-        for window in general_windows:
-            commits_by_window = git_wrapper.commits_by_window(window[1], window[2])
-            if [commit for commit in commits_by_window if commit['commit']['author']['email'] == sector.sector_name]:
-                sector.add_window(Window(window[0], window[1], window[2], sector.sector_name))
+        for window_position in git_wrapper.contributors_windows[sector.sector_name]:
+            sector.add_window(Window(general_windows[window_position-1][0], general_windows[window_position-1][1], general_windows[window_position-1][2], sector.sector_name))
+            print(sector.sector_name, general_windows[window_position-1])
 
 
 def load_molecules_to_sectors(sectors):
     count = 0
     for sector in sectors:
         for window in sector.windows:
-            commits_by_window = git_wrapper.commits_by_window(window.starts, window.ends)
-            commits_by_sector = [commit['commit']['message'] for commit in commits_by_window if commit['commit']['author']['email'] == window.sector_parent]
+            commits_by_sector = [commit['commit']['message'] for commit in git_wrapper.commits_by_window(window.starts, window.ends, window.sector_parent)]
             for commit in commits_by_sector:
                 window.add_molecule(Molecule(dict(message=commit), window.position))
+                print('commit')
 
 
 if __name__=='__main__':
     commits = git_wrapper.commits
 
     sectors = []
-    general_windows = list_windows()
+    general_windows = list_windows.list_windows()
 
     for user in git_wrapper.contributors:
-        sectors.append(Sector(user['email'], 0.066))
+        sectors.append(Sector(user['email'], 0.0025))
 
     load_windows_to_sectors(sectors, general_windows)
     load_molecules_to_sectors(sectors)
@@ -104,8 +84,8 @@ if __name__=='__main__':
     json_dict = dict(period={"starts": "01/09/1978 00:00:00 +0000", "ends": "07/09/2017 00:00:00 +0000"},
                      query="",
                      window={
-                         "size": 25,
-                         "amount": 12,
+                         "size": 12,
+                         "amount": 19,
                          "mode": "GLOBAL"
                      },
                      sector={"label": "krita"},
