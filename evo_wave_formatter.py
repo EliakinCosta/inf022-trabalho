@@ -43,10 +43,22 @@ class Window(object):
 class Molecule(object):
     """ It represents molecule structure including your window position. """
 
-    def __init__(self, data, window_position, color='FFFF0000'):
+    def __init__(self, data, window_position):
         self.data = data
         self.window_position = window_position
-        self.color = color
+        self.define_color()
+
+    def define_color(self):
+        if self.data['lines_modified'] <= 10 or  self.data['files_modified'] <= 1:
+            self.color = 'FF66FFFF'
+        elif self.data['lines_modified'] <= 15 or  self.data['files_modified'] <= 2:
+            self.color = 'FF5079ff'
+        elif self.data['lines_modified'] <= 20 or  self.data['files_modified'] <= 3:
+            self.color = 'FFFFE800'
+        elif self.data['lines_modified'] <= 25 or  self.data['files_modified'] <= 4:
+            self.color = 'FFF67B5E'
+        elif self.data['lines_modified'] >= 26 or  self.data['files_modified'] >= 5:
+            self.color = 'FF85090B'
 
     def as_dict(self):
         return dict(color=self.color, data=self.data)
@@ -60,13 +72,14 @@ def load_windows_to_sectors(sectors, general_windows):
 
 
 def load_molecules_to_sectors(sectors):
-    count = 0
+    count = 1
     for sector in sectors:
         for window in sector.windows:
-            commits_by_sector = [commit['commit']['message'] for commit in git_wrapper.commits_by_window(window.starts, window.ends, window.sector_parent)]
+            commits_by_sector = [dict(files_modified=len(commit.get('files', [])), lines_modified=commit['stats']['total']) for commit in git_wrapper.commits_by_window(window.starts, window.ends, window.sector_parent) if commit.get('stats')]
             for commit in commits_by_sector:
-                window.add_molecule(Molecule(dict(message=commit), window.position))
-                print('commit')
+                window.add_molecule(Molecule(commit, window.position))
+                print('commit', count)
+                count += 1
 
 
 if __name__=='__main__':
@@ -76,7 +89,7 @@ if __name__=='__main__':
     general_windows = list_windows.list_windows()
 
     for user in git_wrapper.contributors:
-        sectors.append(Sector(user['email'], 0.0025))
+        sectors.append(Sector(user['email'], 0.01))
 
     load_windows_to_sectors(sectors, general_windows)
     load_molecules_to_sectors(sectors)
@@ -84,7 +97,7 @@ if __name__=='__main__':
     json_dict = dict(period={"starts": "01/09/1978 00:00:00 +0000", "ends": "07/09/2017 00:00:00 +0000"},
                      query="",
                      window={
-                         "size": 12,
+                         "size": 2,
                          "amount": 19,
                          "mode": "GLOBAL"
                      },
