@@ -32,21 +32,28 @@ class RepositoryFacade(object):
             if not commit['commit']['author']['email'] in [user['email'] for user in contributors]:
                 contributors.append(dict(email=commit['commit']['author']['email'], name=commit['commit']['author']['name']))
                 self.contributors_windows[str(commit['commit']['author']['email'])] = set([])
-            self.contributors_windows[commit['commit']['author']['email']].add(self._commit_window(commit))
+
+            current_window = self._commit_window(commit)
+            if current_window:
+                self.contributors_windows[commit['commit']['author']['email']].add(current_window)
 
         self.contributors.extend(contributors)
 
     def _commit_window(self, commit):
         for window in list_windows.list_windows():
-            if(date_parser.parse(commit['commit']['committer']['date'])>=window[1] and
-            date_parser.parse(commit['commit']['committer']['date'])<=window[2]):
+            if((date_parser.parse(commit['commit']['committer']['date'])>=window[1]) and
+                date_parser.parse(commit['commit']['committer']['date'])<=window[2]  and
+                not (date_parser.parse(commit['commit']['committer']['date'])>=window[3] and
+                    date_parser.parse(commit['commit']['committer']['date'])<=window[4])):
                 return window[0]
 
 
-    def commits_by_window(self, start_period, end_pediod, contributor):
+    def commits_by_window(self, start_period, end_pediod, ignored_period_start, ignored_period_end, contributor):
         return [commit for commit in self.commits if (date_parser.parse(commit['commit']['committer']['date'])>=start_period and
                                                       date_parser.parse(commit['commit']['committer']['date'])<=end_pediod and
-                                                      commit['commit']['author']['email']==contributor)]
+                                                      commit['commit']['author']['email']==contributor and
+                                                      not (date_parser.parse(commit['commit']['committer']['date'])>=ignored_period_start and
+                                                           date_parser.parse(commit['commit']['committer']['date'])<=ignored_period_end))]
 
 
 if __name__=='__main__':
