@@ -92,12 +92,14 @@ def load_molecules_to_sectors(sectors):
 
 if __name__=='__main__':
     commits = git_wrapper.commits
-    print(len(commits))
     sectors = []
     general_windows = list_windows.list_windows()
+    angle = round((100/len(git_wrapper.contributors)) * 0.01, 4)
+
+    print(len(commits), angle)
 
     for user in git_wrapper.contributors:
-        sectors.append(Sector(user['email'], round((100/len(general_windows)) * 0.01, 4)))
+        sectors.append(Sector(user['email'], angle))
 
     load_windows_to_sectors(sectors, general_windows)
     load_molecules_to_sectors(sectors)

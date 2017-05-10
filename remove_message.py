@@ -3,7 +3,7 @@ import json
 
 def has_more_than(sector):
     count = len([molecule for window in sector['windows'] for molecule in window['molecules']])
-    if count > 0:
+    if count > 10:
         return True
     return False
 
