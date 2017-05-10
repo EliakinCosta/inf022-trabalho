@@ -81,8 +81,6 @@ def load_molecules_to_sectors(sectors):
     count = 1
     for sector in sectors:
         for window in sector.windows:
-            print(window.starts, window.ends)
-            print(len(git_wrapper.commits_by_window(window.starts, window.ends, window.ignored_start, window.ignored_end, window.sector_parent)))
             commits_by_sector = [dict(files_modified=len(commit.get('files', [])), lines_modified=commit['stats']['total']) for commit in git_wrapper.commits_by_window(window.starts, window.ends, window.ignored_start, window.ignored_end, window.sector_parent) if commit.get('stats')]
             for commit in commits_by_sector:
                 window.add_molecule(Molecule(commit, window.position))
@@ -95,8 +93,6 @@ if __name__=='__main__':
     sectors = []
     general_windows = list_windows.list_windows()
     angle = round((100/len(git_wrapper.contributors)) * 0.01, 4)
-
-    print(len(commits), angle)
 
     for user in git_wrapper.contributors:
         sectors.append(Sector(user['email'], angle))
